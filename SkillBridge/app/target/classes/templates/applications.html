@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Applications - SkillBridge</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container py-4" style="max-width:900px;">
+    <h3 class="sb-section-title">My Applications</h3>
+    <p class="sb-section-subtitle">Track the status of every internship you've applied to.</p>
+
+    <div th:if="${#lists.isEmpty(applications)}" class="sb-empty">
+        <i class="bi bi-send"></i>
+        You haven't applied to any internships yet.
+    </div>
+
+    <div class="accordion" id="applicationsAccordion" th:unless="${#lists.isEmpty(applications)}">
+        <div class="card mb-2" th:each="a, iter : ${applications}">
+            <button class="btn btn-link text-decoration-none text-dark w-100 text-start p-3 d-flex justify-content-between align-items-center"
+                    type="button" data-bs-toggle="collapse" th:data-bs-target="'#collapse' + ${iter.index}">
+                <span>
+                    <strong th:text="${a.internship.title}"></strong>
+                    <span class="text-muted small"> — </span>
+                    <span class="text-muted small" th:text="${a.internship.company}"></span>
+                </span>
+                <span class="badge" th:classappend="'badge-status-' + ${a.status}" th:text="${a.status}"></span>
+            </button>
+            <div th:id="'collapse' + ${iter.index}" class="collapse">
+                <div class="card-body border-top">
+                    <div th:if="${!#lists.isEmpty(a.interviews)}" class="mb-3">
+                        <div class="alert alert-primary py-2 small mb-1" th:each="iv : ${a.interviews}">
+                            <i class="bi bi-camera-video"></i>
+                            Interview on <strong th:text="${#temporals.format(iv.scheduledAt, 'dd MMM yyyy, hh:mm a')}"></strong>
+                            via <span th:text="${iv.mode}"></span>
+                        </div>
+                    </div>
+                    <ol class="list-unstyled border-start ps-3">
+                        <li class="mb-3 position-relative" th:each="event : ${a.timeline}">
+                            <span class="position-absolute top-0 start-0 translate-middle-x mt-1 bg-primary rounded-circle" style="width:8px;height:8px;margin-left:-1.55rem;"></span>
+                            <span class="badge" th:classappend="'badge-status-' + ${event.status}" th:text="${event.status}"></span>
+                            <span class="small text-muted ms-2" th:text="${#temporals.format(event.createdAt, 'dd MMM yyyy, hh:mm a')}"></span>
+                            <p class="small mb-0 mt-1" th:if="${event.note}" th:text="${event.note}"></p>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

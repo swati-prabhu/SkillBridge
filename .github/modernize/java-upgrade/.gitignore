@@ -1,0 +1,31 @@
+# Environment files
+.env
+.env.*
+**/.env
+
+# Java
+**/target/
+*.class
+*.log
+
+# Node
+**/node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build files
+dist/
+build/
+
+# Maven wrapper logs
+.mvn/wrapper/maven-wrapper.jar
+
+# Java build output
+**/target/

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Referral Requests - SkillBridge</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container py-4">
+    <h3 class="sb-section-title">Referral Requests</h3>
+    <p class="sb-section-subtitle">Ask an alumnus to refer you for an internship.</p>
+
+    <div class="card p-3 mb-4">
+        <div th:if="${#lists.isEmpty(alumni)}" class="text-muted small">No alumni are registered yet.</div>
+        <form th:unless="${#lists.isEmpty(alumni)}" th:action="@{/referrals}" method="post" class="row g-2">
+            <div class="col-md-4">
+                <select name="alumniId" class="form-select" required>
+                    <option value="" disabled selected>Choose an alumnus</option>
+                    <option th:each="a : ${alumni}" th:value="${a.id}" th:text="${a.fullName} + ' (' + ${a.graduationYear} + ')'"></option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select name="internshipId" class="form-select">
+                    <option value="">General referral</option>
+                    <option th:each="i : ${internships}" th:value="${i.id}" th:text="${i.title} + ' — ' + ${i.company}"></option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <input type="text" name="message" class="form-control" placeholder="Short message (optional)">
+            </div>
+            <div class="col-12">
+                <button class="btn btn-primary btn-sm" type="submit">Request Referral</button>
+            </div>
+        </form>
+    </div>
+
+    <div th:if="${#lists.isEmpty(requests)}" class="sb-empty">
+        <i class="bi bi-person-check"></i>
+        No referral requests yet.
+    </div>
+
+    <div class="card p-3" th:unless="${#lists.isEmpty(requests)}">
+        <div th:each="r : ${requests}" class="border-bottom py-2">
+            <div class="d-flex justify-content-between">
+                <span>To <strong th:text="${r.alumni.fullName}"></strong><span th:if="${r.internship}"> for <span th:text="${r.internship.title}"></span></span></span>
+                <span class="badge" th:classappend="${r.status.name() == 'APPROVED'} ? 'bg-success' : (${r.status.name() == 'DECLINED'} ? 'bg-danger' : 'bg-warning text-dark')" th:text="${r.status}"></span>
+            </div>
+            <p class="small text-muted mb-0" th:if="${r.responseNote}" th:text="'Response: ' + ${r.responseNote}"></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

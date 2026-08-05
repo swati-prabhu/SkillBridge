@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: skillbridge-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: skillbridge
+      MYSQL_USER: skillbridge
+      MYSQL_PASSWORD: skillbridge
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootpass"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: ./app
+    container_name: skillbridge-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/skillbridge?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: skillbridge
+      SPRING_DATASOURCE_PASSWORD: skillbridge
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-SkillBridge <no-reply@skillbridge.dev>}
+    ports:
+      - "8080:8080"
+    volumes:
+      - resume_uploads:/app/uploads
+
+  mcp-server:
+    build: ./mcp-server
+    container_name: skillbridge-mcp
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_USER: skillbridge
+      DB_PASSWORD: skillbridge
+      DB_NAME: skillbridge
+    stdin_open: true
+    tty: true
+
+volumes:
+  db_data:
+  resume_uploads:

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Progress - SkillBridge</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container py-4">
+    <h3 class="sb-section-title">My Progress</h3>
+    <p class="sb-section-subtitle">Everything feeding into your career readiness, in one place.</p>
+
+    <!-- Readiness Score hero -->
+    <div class="card p-4 mb-4" style="background: linear-gradient(135deg, var(--sb-primary), var(--sb-primary-dark)); color:#fff;">
+        <div class="row align-items-center">
+            <div class="col-md-3 text-center border-end">
+                <div style="font-size:3rem; font-weight:800;" th:text="${readinessScore} + '%'"></div>
+                <div class="small opacity-75">Career Readiness Score</div>
+            </div>
+            <div class="col-md-9">
+                <p class="mb-2 small opacity-75">A weighted blend of your resume completeness (40%), aptitude test performance (30%), and roadmap progress (30%) — the same signals a recruiter would actually look for.</p>
+                <div class="row text-center g-2">
+                    <div class="col-4">
+                        <div class="fw-bold" th:text="${resumeScore} + '%'"></div>
+                        <div class="small opacity-75">Resume</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold" th:text="${#numbers.formatDecimal(aptitudeAvg, 1, 1)} + '%'"></div>
+                        <div class="small opacity-75">Aptitude Avg</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold" th:text="${roadmapOverall} + '%'"></div>
+                        <div class="small opacity-75">Roadmaps</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-1">
+        <div class="col-md-3">
+            <div class="card stat-card sb-hover">
+                <div class="stat-icon"><i class="bi bi-send-check"></i></div>
+                <div class="value" th:text="${applicationsCount}"></div>
+                <div class="label">Applications</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card sb-hover">
+                <div class="stat-icon"><i class="bi bi-bookmark-star"></i></div>
+                <div class="value" th:text="${bookmarksCount}"></div>
+                <div class="label">Saved Internships</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <a href="/resume" class="text-decoration-none">
+                <div class="card stat-card sb-hover">
+                    <div class="stat-icon"><i class="bi bi-file-earmark-person"></i></div>
+                    <div class="value" th:text="${resumeScore} + '%'"></div>
+                    <div class="label">Resume Score</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="/tests" class="text-decoration-none">
+                <div class="card stat-card sb-hover">
+                    <div class="stat-icon"><i class="bi bi-patch-question"></i></div>
+                    <div class="value" th:text="${#lists.size(testHistory)}"></div>
+                    <div class="label">Tests Taken</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+        <!-- Aptitude score trend -->
+        <div class="col-md-6">
+            <div class="card p-3 h-100">
+                <h6>Aptitude Score Trend</h6>
+                <div th:if="${#lists.isEmpty(testHistory)}" class="sb-empty py-4">
+                    <i class="bi bi-graph-up"></i>
+                    Take an aptitude test to see your trend here.
+                </div>
+                <canvas id="trendChart" height="180" th:unless="${#lists.isEmpty(testHistory)}"></canvas>
+            </div>
+        </div>
+
+        <!-- Application status breakdown -->
+        <div class="col-md-6">
+            <div class="card p-3 h-100">
+                <h6>Application Status</h6>
+                <div th:if="${applicationsCount == 0}" class="sb-empty py-4">
+                    <i class="bi bi-send"></i>
+                    Apply to internships to see your funnel here.
+                </div>
+                <canvas id="statusChart" height="180" th:unless="${applicationsCount == 0}"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Roadmap progress -->
+    <div class="card p-3 mt-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">Roadmap Progress</h6>
+            <a href="/roadmaps" class="small">View all <i class="bi bi-arrow-right"></i></a>
+        </div>
+
+        <div th:if="${recommendedRoadmap != null}" class="alert alert-primary d-flex justify-content-between align-items-center py-2 mb-3">
+            <span><i class="bi bi-stars"></i> Recommended for you based on your skills: <strong th:text="${recommendedRoadmap.title}"></strong></span>
+            <a th:href="@{/roadmaps/{id}(id=${recommendedRoadmap.id})}" class="btn btn-sm btn-primary">View</a>
+        </div>
+
+        <div th:each="r : ${roadmapProgress}" class="mb-3">
+            <div class="d-flex justify-content-between small mb-1">
+                <span><i th:class="'bi ' + ${r.icon}"></i> <span th:text="${r.title}"></span></span>
+                <span th:text="${r.percent} + '%'"></span>
+            </div>
+            <div class="roadmap-progress">
+                <div class="roadmap-progress-bar" th:style="'width:' + ${r.percent} + '%'"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const testHistory = /*[[${testHistory}]]*/ [];
+    const statusCounts = /*[[${statusCounts}]]*/ {};
+    /*]]>*/
+
+    if (testHistory.length > 0) {
+        const trendCanvas = document.getElementById('trendChart');
+        new Chart(trendCanvas, {
+            type: 'line',
+            data: {
+                labels: testHistory.map((r, i) => 'Attempt ' + (i + 1)),
+                datasets: [{
+                    label: 'Score %',
+                    data: testHistory.map(r => Math.round((r.score / r.totalQuestions) * 100)),
+                    borderColor: '#4f46e5',
+                    backgroundColor: 'rgba(79,70,229,0.1)',
+                    tension: 0.3,
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, max: 100 } }
+            }
+        });
+    }
+
+    const statusKeys = Object.keys(statusCounts);
+    if (statusKeys.length > 0) {
+        const statusCanvas = document.getElementById('statusChart');
+        new Chart(statusCanvas, {
+            type: 'doughnut',
+            data: {
+                labels: statusKeys,
+                datasets: [{
+                    data: statusKeys.map(k => statusCounts[k]),
+                    backgroundColor: ['#64748b', '#f59e0b', '#6366f1', '#06b6d4', '#16a34a', '#dc2626'],
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "skillbridge-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server exposing SkillBridge internship portal data as tools for AI agents (e.g. Claude Desktop).",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "mysql2": "^3.11.0"
+  }
+}

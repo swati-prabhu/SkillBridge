@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - SkillBridge</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h3 class="sb-section-title mb-0">Welcome, <span th:text="${user.fullName}"></span> <i class="bi bi-emoji-smile"></i></h3>
+            <p class="sb-section-subtitle mb-0">Here's what's happening with your applications.</p>
+        </div>
+        <a href="/progress" class="btn btn-outline-primary btn-sm"><i class="bi bi-speedometer2"></i> View My Progress</a>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="card stat-card sb-hover">
+                <div class="stat-icon"><i class="bi bi-send-check"></i></div>
+                <div class="value" th:text="${#lists.size(myApplications)}">0</div>
+                <div class="label">Applications Submitted</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <a href="/resume" class="text-decoration-none">
+                <div class="card stat-card sb-hover">
+                    <div class="stat-icon"><i class="bi bi-file-earmark-person"></i></div>
+                    <div class="value" th:text="${resumeScore} + '%'">0%</div>
+                    <div class="label">Resume Score</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card sb-hover">
+                <div class="stat-icon"><i class="bi bi-camera-video"></i></div>
+                <div class="value" th:text="${interviewCount}">0</div>
+                <div class="label">Interviews Scheduled</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <a href="/tests" class="text-decoration-none">
+                <div class="card stat-card sb-hover">
+                    <div class="stat-icon"><i class="bi bi-patch-question"></i></div>
+                    <div class="value" style="font-size:1.1rem;">Take a Test</div>
+                    <div class="label">Aptitude assessments</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="card mt-3 p-3" th:if="${recommended != null and !#lists.isEmpty(recommended)}">
+        <h5 class="mb-1"><i class="bi bi-stars text-warning"></i> Recommended for You</h5>
+        <p class="text-muted small mb-3">Based on the skills in your profile and resume.</p>
+        <div class="row g-3">
+            <div class="col-md-4" th:each="entry : ${recommended}">
+                <div class="card border p-3 h-100">
+                    <h6 th:text="${entry.key.title}"></h6>
+                    <p class="text-muted small mb-1" th:text="${entry.key.company}"></p>
+                    <span class="badge bg-success-subtle text-success mb-2" th:text="${entry.value} + ' matching skills'"></span>
+                    <a th:href="@{/internships/{id}(id=${entry.key.id})}" class="btn btn-sm btn-outline-primary mt-auto">View</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+        <div class="col-md-6">
+            <a th:href="${recommendedRoadmap != null} ? @{/roadmaps/{id}(id=${recommendedRoadmap.id})} : @{/roadmaps}" class="text-decoration-none">
+                <div class="card sb-hover p-3 h-100">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="roadmap-icon"><i th:class="${recommendedRoadmap != null} ? 'bi ' + ${recommendedRoadmap.icon} : 'bi bi-map'"></i></div>
+                        <div>
+                            <h6 class="mb-1 text-dark" th:if="${recommendedRoadmap != null}">
+                                <i class="bi bi-stars text-warning"></i> Recommended: <span th:text="${recommendedRoadmap.title}"></span>
+                            </h6>
+                            <h6 class="mb-1 text-dark" th:unless="${recommendedRoadmap != null}">Career Roadmaps</h6>
+                            <p class="text-muted small mb-0" th:if="${recommendedRoadmap != null}">Matched to the skills in your profile — pick up where you left off.</p>
+                            <p class="text-muted small mb-0" th:unless="${recommendedRoadmap != null}">Follow a guided path and track your progress toward internship-readiness. Add skills to your profile to get a personalized pick.</p>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6">
+            <a href="/bookmarks" class="text-decoration-none">
+                <div class="card sb-hover p-3 h-100">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="roadmap-icon"><i class="bi bi-bookmark-star"></i></div>
+                        <div>
+                            <h6 class="mb-1 text-dark">Saved Internships</h6>
+                            <p class="text-muted small mb-0">Revisit internships you've bookmarked for later.</p>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="card mt-3 p-3">
+        <h5 class="mb-3">Recent Internships</h5>
+        <div th:if="${#lists.isEmpty(internships)}" class="sb-empty">
+            <i class="bi bi-inboxes"></i>
+            No internships posted yet. Check back soon.
+        </div>
+        <table class="table align-middle" th:unless="${#lists.isEmpty(internships)}">
+            <thead><tr><th>Title</th><th>Company</th><th>Location</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="i : ${internships}">
+                <td th:text="${i.title}"></td>
+                <td th:text="${i.company}"></td>
+                <td th:text="${i.location}"></td>
+                <td><a th:href="@{/internships/{id}(id=${i.id})}" class="btn btn-sm btn-outline-primary">View</a></td>
+            </tr>
+            </tbody>
+        </table>
+        <a href="/internships" class="btn btn-link p-0">See all internships <i class="bi bi-arrow-right"></i></a>
+    </div>
+</div>
+</body>
+</html>

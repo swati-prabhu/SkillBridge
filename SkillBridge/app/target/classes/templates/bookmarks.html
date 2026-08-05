@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Saved Internships - SkillBridge</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container py-4">
+    <h3 class="sb-section-title">Saved Internships</h3>
+    <p class="sb-section-subtitle">Internships you've bookmarked for later.</p>
+
+    <div th:if="${#lists.isEmpty(bookmarks)}" class="sb-empty">
+        <i class="bi bi-bookmark-star"></i>
+        You haven't saved any internships yet.
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-4" th:each="b : ${bookmarks}">
+            <div class="card sb-hover p-3 h-100 d-flex flex-column">
+                <h5 th:text="${b.internship.title}"></h5>
+                <p class="text-muted mb-1" th:text="${b.internship.company}"></p>
+                <p class="small mb-1"><i class="bi bi-geo-alt"></i> <span th:text="${b.internship.location}"></span></p>
+                <a th:href="@{/internships/{id}(id=${b.internship.id})}" class="btn btn-sm btn-outline-primary mt-auto">View Details</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

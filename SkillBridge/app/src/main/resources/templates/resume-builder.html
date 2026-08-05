@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Resume Builder - SkillBridge</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container py-4" style="max-width:800px;">
+    <div class="d-flex justify-content-between align-items-center mb-1">
+        <h3 class="sb-section-title mb-0">Resume Builder</h3>
+        <a href="/resume/pdf" class="btn btn-outline-primary btn-sm"><i class="bi bi-download"></i> Download PDF</a>
+    </div>
+    <p class="sb-section-subtitle">Fill this in once — export a polished PDF anytime, and get a live completeness score.</p>
+
+    <div class="card p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <span class="fw-semibold">Resume Score</span>
+                <span class="badge ms-2" th:classappend="${resume.score >= 80 ? 'bg-success' : (resume.score >= 55 ? 'bg-warning text-dark' : 'bg-danger')}" th:text="${scoreLabel}"></span>
+            </div>
+            <span class="fw-bold" th:text="${resume.score} + '%'"></span>
+        </div>
+        <div class="roadmap-progress mt-2">
+            <div class="roadmap-progress-bar" th:style="'width:' + ${resume.score} + '%'"></div>
+        </div>
+    </div>
+
+    <div class="card p-3 mb-3" th:if="${review != null}">
+        <h6 class="mb-1"><i class="bi bi-robot text-primary"></i> AI Resume Review</h6>
+        <p class="small text-muted mb-3">Rule-based feedback, not a live LLM call — see the code comment in <code>AiResumeReviewService</code> for why.</p>
+
+        <div th:if="${!#lists.isEmpty(review.strengths)}" class="mb-3">
+            <p class="small fw-semibold text-success mb-1"><i class="bi bi-check-circle"></i> Strengths</p>
+            <ul class="small mb-0">
+                <li th:each="s : ${review.strengths}" th:text="${s}"></li>
+            </ul>
+        </div>
+
+        <div th:if="${!#lists.isEmpty(review.issues)}" class="mb-3">
+            <p class="small fw-semibold text-danger mb-1"><i class="bi bi-exclamation-circle"></i> Issues Found</p>
+            <ul class="small mb-0">
+                <li th:each="i : ${review.issues}" th:text="${i}"></li>
+            </ul>
+        </div>
+
+        <div>
+            <p class="small fw-semibold text-primary mb-1"><i class="bi bi-lightbulb"></i> Suggestions</p>
+            <ul class="small mb-0">
+                <li th:each="s : ${review.suggestions}" th:text="${s}"></li>
+            </ul>
+        </div>
+    </div>
+
+    <form th:action="@{/resume}" method="post" id="resumeForm">
+        <div class="card p-3 mb-3">
+            <h6>Basics</h6>
+            <div class="mb-2">
+                <label class="form-label small">Headline</label>
+                <input type="text" name="headline" class="form-control" th:value="${resume.headline}" placeholder="e.g. Aspiring Backend Developer">
+            </div>
+            <div class="mb-2">
+                <label class="form-label small">Summary</label>
+                <textarea name="summary" class="form-control" rows="3" th:text="${resume.summary}"></textarea>
+            </div>
+            <div class="mb-2">
+                <label class="form-label small">Skills (comma-separated)</label>
+                <input type="text" name="skills" class="form-control" th:value="${user.skills}">
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-2">
+                    <label class="form-label small">GitHub</label>
+                    <input type="text" name="github" class="form-control" th:value="${resume.github}">
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="form-label small">LinkedIn</label>
+                    <input type="text" name="linkedin" class="form-control" th:value="${resume.linkedin}">
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="form-label small">Portfolio</label>
+                    <input type="text" name="portfolio" class="form-control" th:value="${resume.portfolio}">
+                </div>
+            </div>
+        </div>
+
+        <!-- Education -->
+        <div class="card p-3 mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">Education</h6>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addRow('education-rows', educationTemplate)"><i class="bi bi-plus-lg"></i> Add</button>
+            </div>
+            <div id="education-rows">
+                <div class="row g-2 mb-2 border-bottom pb-2" th:each="e : ${resume.education}">
+                    <div class="col-md-4"><input type="text" name="eduInstitution" class="form-control form-control-sm" th:value="${e.institution}" placeholder="Institution"></div>
+                    <div class="col-md-3"><input type="text" name="eduDegree" class="form-control form-control-sm" th:value="${e.degree}" placeholder="Degree"></div>
+                    <div class="col-md-2"><input type="text" name="eduStartYear" class="form-control form-control-sm" th:value="${e.startYear}" placeholder="Start"></div>
+                    <div class="col-md-2"><input type="text" name="eduEndYear" class="form-control form-control-sm" th:value="${e.endYear}" placeholder="End"></div>
+                    <div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.row').remove()"><i class="bi bi-x"></i></button></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Experience -->
+        <div class="card p-3 mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">Experience</h6>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addRow('experience-rows', experienceTemplate)"><i class="bi bi-plus-lg"></i> Add</button>
+            </div>
+            <div id="experience-rows">
+                <div class="row g-2 mb-2 border-bottom pb-2" th:each="e : ${resume.experience}">
+                    <div class="col-md-3"><input type="text" name="expCompany" class="form-control form-control-sm" th:value="${e.company}" placeholder="Company"></div>
+                    <div class="col-md-3"><input type="text" name="expRole" class="form-control form-control-sm" th:value="${e.role}" placeholder="Role"></div>
+                    <div class="col-md-2"><input type="text" name="expStartDate" class="form-control form-control-sm" th:value="${e.startDate}" placeholder="Start"></div>
+                    <div class="col-md-2"><input type="text" name="expEndDate" class="form-control form-control-sm" th:value="${e.endDate}" placeholder="End"></div>
+                    <div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.row').remove()"><i class="bi bi-x"></i></button></div>
+                    <div class="col-12"><textarea name="expDescription" class="form-control form-control-sm" rows="2" placeholder="What did you do?" th:text="${e.description}"></textarea></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects -->
+        <div class="card p-3 mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">Projects</h6>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addRow('project-rows', projectTemplate)"><i class="bi bi-plus-lg"></i> Add</button>
+            </div>
+            <div id="project-rows">
+                <div class="row g-2 mb-2 border-bottom pb-2" th:each="p : ${resume.projects}">
+                    <div class="col-md-4"><input type="text" name="projName" class="form-control form-control-sm" th:value="${p.name}" placeholder="Project name"></div>
+                    <div class="col-md-4"><input type="text" name="projTechStack" class="form-control form-control-sm" th:value="${p.techStack}" placeholder="Tech stack"></div>
+                    <div class="col-md-3"><input type="text" name="projLink" class="form-control form-control-sm" th:value="${p.link}" placeholder="Link"></div>
+                    <div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.row').remove()"><i class="bi bi-x"></i></button></div>
+                    <div class="col-12"><textarea name="projDescription" class="form-control form-control-sm" rows="2" placeholder="Description" th:text="${p.description}"></textarea></div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save Resume</button>
+    </form>
+</div>
+
+<template id="educationTemplateEl">
+    <div class="row g-2 mb-2 border-bottom pb-2">
+        <div class="col-md-4"><input type="text" name="eduInstitution" class="form-control form-control-sm" placeholder="Institution"></div>
+        <div class="col-md-3"><input type="text" name="eduDegree" class="form-control form-control-sm" placeholder="Degree"></div>
+        <div class="col-md-2"><input type="text" name="eduStartYear" class="form-control form-control-sm" placeholder="Start"></div>
+        <div class="col-md-2"><input type="text" name="eduEndYear" class="form-control form-control-sm" placeholder="End"></div>
+        <div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.row').remove()"><i class="bi bi-x"></i></button></div>
+    </div>
+</template>
+<template id="experienceTemplateEl">
+    <div class="row g-2 mb-2 border-bottom pb-2">
+        <div class="col-md-3"><input type="text" name="expCompany" class="form-control form-control-sm" placeholder="Company"></div>
+        <div class="col-md-3"><input type="text" name="expRole" class="form-control form-control-sm" placeholder="Role"></div>
+        <div class="col-md-2"><input type="text" name="expStartDate" class="form-control form-control-sm" placeholder="Start"></div>
+        <div class="col-md-2"><input type="text" name="expEndDate" class="form-control form-control-sm" placeholder="End"></div>
+        <div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.row').remove()"><i class="bi bi-x"></i></button></div>
+        <div class="col-12"><textarea name="expDescription" class="form-control form-control-sm" rows="2" placeholder="What did you do?"></textarea></div>
+    </div>
+</template>
+<template id="projectTemplateEl">
+    <div class="row g-2 mb-2 border-bottom pb-2">
+        <div class="col-md-4"><input type="text" name="projName" class="form-control form-control-sm" placeholder="Project name"></div>
+        <div class="col-md-4"><input type="text" name="projTechStack" class="form-control form-control-sm" placeholder="Tech stack"></div>
+        <div class="col-md-3"><input type="text" name="projLink" class="form-control form-control-sm" placeholder="Link"></div>
+        <div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.row').remove()"><i class="bi bi-x"></i></button></div>
+        <div class="col-12"><textarea name="projDescription" class="form-control form-control-sm" rows="2" placeholder="Description"></textarea></div>
+    </div>
+</template>
+
+<script>
+    const educationTemplate = document.getElementById('educationTemplateEl');
+    const experienceTemplate = document.getElementById('experienceTemplateEl');
+    const projectTemplate = document.getElementById('projectTemplateEl');
+
+    function addRow(containerId, template) {
+        const container = document.getElementById(containerId);
+        const clone = template.content.cloneNode(true);
+        container.appendChild(clone);
+    }
+</script>
+</body>
+</html>

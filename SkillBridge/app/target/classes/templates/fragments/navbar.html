@@ -1,0 +1,105 @@
+<div xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:fragment="navbar">
+    <nav class="navbar navbar-expand-lg navbar-dark sb-navbar px-4 py-2">
+        <a class="navbar-brand" href="/dashboard"><i class="bi bi-bezier2"></i> SkillBridge</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sbNavContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="sbNavContent">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a class="nav-link" href="/dashboard"><i class="bi bi-grid-1x2"></i>Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="/internships"><i class="bi bi-briefcase"></i>Internships</a></li>
+
+                <!-- Career Tools dropdown (student-focused) -->
+                <li class="nav-item dropdown" sec:authorize="hasAuthority('ROLE_STUDENT')">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-tools"></i>Career Tools</a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/progress"><i class="bi bi-speedometer2"></i> My Progress</a></li>
+                        <li><a class="dropdown-item" href="/roadmaps"><i class="bi bi-map"></i> Roadmaps</a></li>
+                        <li><a class="dropdown-item" href="/skill-gap"><i class="bi bi-graph-up-arrow"></i> Skill Gap Analysis</a></li>
+                        <li><a class="dropdown-item" href="/resume"><i class="bi bi-file-earmark-person"></i> Resume Builder</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/tests"><i class="bi bi-patch-question"></i> Aptitude Tests</a></li>
+                        <li><a class="dropdown-item" href="/contests"><i class="bi bi-trophy"></i> Coding Contests</a></li>
+                        <li><a class="dropdown-item" href="/mock-interviews"><i class="bi bi-person-video3"></i> Mock Interviews</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/bookmarks"><i class="bi bi-bookmark-star"></i> Saved Internships</a></li>
+                        <li><a class="dropdown-item" href="/saved-searches"><i class="bi bi-bell"></i> Saved Search Alerts</a></li>
+                        <li><a class="dropdown-item" href="/referrals"><i class="bi bi-person-check"></i> Referral Requests</a></li>
+                    </ul>
+                </li>
+
+                <!-- Community dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-people"></i>Community</a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/forum"><i class="bi bi-chat-dots"></i> Discussion Forum</a></li>
+                        <li><a class="dropdown-item" href="/companies"><i class="bi bi-building"></i> Companies &amp; Ratings</a></li>
+                        <li sec:authorize="hasAuthority('ROLE_STUDENT')"><a class="dropdown-item" href="/referrals/received"><i class="bi bi-inbox"></i> Referrals I Can Give</a></li>
+                    </ul>
+                </li>
+
+                <!-- Recruiter menu -->
+                <li class="nav-item dropdown" sec:authorize="hasAuthority('ROLE_RECRUITER')">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-person-workspace"></i>Recruiting</a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/recruiter/internships"><i class="bi bi-briefcase"></i> My Internships</a></li>
+                        <li><a class="dropdown-item" href="/internships/new"><i class="bi bi-plus-lg"></i> Post Internship</a></li>
+                        <li><a class="dropdown-item" href="/recruiter/profile"><i class="bi bi-building"></i> Company Profile</a></li>
+                    </ul>
+                </li>
+
+                <!-- Admin menu -->
+                <li class="nav-item dropdown" sec:authorize="hasAuthority('ROLE_ADMIN')">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-shield-check"></i>Admin</a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/analytics"><i class="bi bi-graph-up"></i> Analytics</a></li>
+                        <li><a class="dropdown-item" href="/placement-statistics"><i class="bi bi-bar-chart"></i> Placement Statistics</a></li>
+                        <li><a class="dropdown-item" href="/reports"><i class="bi bi-file-earmark-pdf"></i> Reports</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/applications/manage"><i class="bi bi-kanban"></i> Manage Applications</a></li>
+                        <li><a class="dropdown-item" href="/admin/drives"><i class="bi bi-calendar-event"></i> Placement Drives</a></li>
+                        <li><a class="dropdown-item" href="/admin/companies"><i class="bi bi-building-check"></i> Companies &amp; Recruiters</a></li>
+                        <li><a class="dropdown-item" href="/mock-interviews/manage"><i class="bi bi-person-video3"></i> Mock Interview Review</a></li>
+                        <li><a class="dropdown-item" href="/forum/moderate"><i class="bi bi-shield-exclamation"></i> Moderate Forum</a></li>
+                        <li><a class="dropdown-item" href="/admin/audit-log"><i class="bi bi-list-check"></i> Audit Log</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="d-flex align-items-center gap-2">
+                <!-- Notification bell -->
+                <div class="dropdown">
+                    <a class="sb-bell dropdown-toggle" style="text-decoration:none;" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-bell"></i>
+                        <span class="badge rounded-pill bg-danger" th:if="${unreadNotifications != null and unreadNotifications > 0}" th:text="${unreadNotifications}"></span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end sb-notif-dropdown p-0">
+                        <li class="px-3 py-2 fw-bold border-bottom d-flex justify-content-between align-items-center">
+                            Notifications
+                            <a href="/notifications" class="small">View all</a>
+                        </li>
+                        <li th:if="${recentNotifications == null or #lists.isEmpty(recentNotifications)}">
+                            <p class="text-muted small px-3 py-3 mb-0">No notifications yet.</p>
+                        </li>
+                        <li th:each="n : ${recentNotifications}">
+                            <a th:href="${n.link != null ? n.link : '#'}" class="sb-notif-item d-block" th:classappend="${!n.read} ? 'unread' : ''">
+                                <span th:text="${n.message}"></span>
+                                <div class="text-muted" style="font-size:0.72rem;" th:text="${#temporals.format(n.createdAt, 'dd MMM, HH:mm')}"></div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <a class="nav-link" href="/profile"><i class="bi bi-person-circle"></i></a>
+                <form th:action="@{/logout}" method="post" class="d-flex">
+                    <button class="btn btn-outline-light btn-sm" type="submit">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- AI Placement Assistant floating chat widget (rule-based, not an LLM - see AiAssistantService) -->
+    <div th:replace="~{fragments/ai-assistant :: widget}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</div>

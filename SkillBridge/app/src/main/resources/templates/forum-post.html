@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Forum Post - SkillBridge</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container py-4" style="max-width:700px;">
+    <a href="/forum" class="text-decoration-none small text-muted"><i class="bi bi-arrow-left"></i> All posts</a>
+
+    <div class="card p-4 mt-2">
+        <div class="d-flex justify-content-between">
+            <h4 th:text="${post.title}"></h4>
+            <span class="badge bg-light text-dark border" th:text="${post.category}"></span>
+        </div>
+        <p class="small text-muted">by <span th:text="${post.author.fullName}"></span> · <span th:text="${#temporals.format(post.createdAt, 'dd MMM yyyy, hh:mm a')}"></span></p>
+        <p class="mt-2" th:text="${post.body}" style="white-space:pre-line;"></p>
+        <form th:action="@{/forum/{id}/flag(id=${post.id})}" method="post">
+            <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-flag"></i> Flag as inappropriate</button>
+        </form>
+    </div>
+
+    <h6 class="mt-4">Comments (<span th:text="${#lists.size(post.comments)}"></span>)</h6>
+    <div class="card p-3 mb-2" th:each="c : ${post.comments}">
+        <p class="small text-muted mb-1"><strong th:text="${c.author.fullName}"></strong> · <span th:text="${#temporals.format(c.createdAt, 'dd MMM, hh:mm a')}"></span></p>
+        <p class="mb-0" th:text="${c.body}"></p>
+    </div>
+
+    <div class="card p-3 mt-3">
+        <form th:action="@{/forum/{id}/comments(id=${post.id})}" method="post">
+            <textarea name="body" class="form-control mb-2" rows="3" placeholder="Add a comment..." required></textarea>
+            <button class="btn btn-primary btn-sm" type="submit">Post Comment</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>
